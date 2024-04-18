@@ -63,7 +63,7 @@ Once this works the next step will be to test importing from `Vts.dll`
 
     import clr
     git_dir = "/path/to/git/repository/"
-    dll_path = git_dir + "vts/src/Vts/bin/Release/net6.0/Vts.dll"
+    dll_path = git_dir + "vts/src/Vts/publish/local/Vts.dll"
     clr.AddReference(dll_path)
     from Vts import *
 
@@ -72,7 +72,7 @@ Once this works the next step will be to test importing from `Vts.dll`
 To run `VTS` programs in `python` include the following the header (where, of course, "/path/to" has been updated for your system
 
     import clr
-    clr.AddReference("/path/to/vts/src/Vts/bin/Release/net6.0/Vts.dll")
+    clr.AddReference("/path/to/vts/src/Vts/publish/local/Vts.dll")
     
     from Vts import *
     from Vts.Common import *
