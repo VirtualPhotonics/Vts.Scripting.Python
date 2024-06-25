@@ -1,10 +1,8 @@
 # Using VTS in a Jupyter notebook
 
-This is likely to change once `python` scripting is formally supported by `VTS`.  
+This information will likely change as more support for `python` and `.NET` is introduced.  
 
-## macOS installation details
-
-This is a record of how I got `vts` working in `JupyterLab`.
+## Installation details
 
 ### Step 1: Install .NET 6
 
@@ -12,7 +10,9 @@ You will need version 6 of .NET which is available from Microsoft below
 
 https://dotnet.microsoft.com/en-us/download/dotnet/6.0
 
-I saved everything to `$HOME/Documents/Code/dotnet6`
+
+***On MacOS:***
+Save everything to `$HOME/Documents/Code/dotnet6`
 
 Do not forget to update your `~/.bash_profile` or whatever you use so that this directory is in your path.  Also define `DOTNET_ROOT` 
 
@@ -20,31 +20,19 @@ Do not forget to update your `~/.bash_profile` or whatever you use so that this 
   
     export DOTNET_ROOT=$HOME/Documents/Code/dotnet6
 
-### Step 2: Install VTS
-
-Follow the guidelines at https://github.com/VirtualPhotonics/VTS/wiki/Getting-Started-on-Mac  Briefly, clone the `.git` repo 
+### Step 2: Clone the scripting repository
 
     git clone https://github.com/VirtualPhotonics/vts.git
 
-This will create the directory `vts` that is needed for the next step
+### Step 3: Download the VTS libraries
 
-Install both `powershell` and `nuget` using [Homebrew](https://brew.sh)
+Get the latest VTS libraries for the specific platform from [releases](https://github.com/VirtualPhotonics/Vts.Scripting.Python/releases) and extract them into the **libraries** folder under **scripting**. 
 
-    brew install powershell
-    brew install nuget
-
-Now build VTS.  If you don't have `matlab` don't worry, it seemed to work fine without completing the `matlab` tests
-
-    pwsh
-    cd vts
-    ./BuildTestRelease.ps1 
-    exit
-
-### Step 3: Install pythonnet
+### Step 4: Install pythonnet
 
     pip install pythonnet
 
-Because `pythonnet` under macOS (or linux) defaults to `mono`, two more things need to added to `~/.bash_profile`
+***Note for MacOS and Linux:*** Because `pythonnet` under macOS (or linux) defaults to `mono`, two more things need to added to `~/.bash_profile`
 
     export PYTHONNET_RUNTIME=coreclr
     export PYTHONNET_PYDLL=/usr/local/bin/python3   
@@ -54,15 +42,18 @@ Obviously use the path for python on your system  (`which python3` will tell you
 Next start a `JupyterLab` notebook to verify that things are installed correctly
 
     import clr
-    
     clr.AddReference("System")
     from System import Console
     Console.WriteLine("Hello from .NET 6!")
 
 The final test is importing from `Vts.dll`
+    
+    from pythonnet import set_runtime
+    set_runtime("coreclr")
 
     import clr
-    clr.AddReference("/path/to/vts/src/Vts/publish/local/Vts.dll")    
+    clr.AddReference("/path/to/libraries/Vts.dll")    
+    
     from Vts import *
 
 where, of course, "/path/to" above has been adapted to your system
@@ -71,8 +62,12 @@ where, of course, "/path/to" above has been adapted to your system
 
 To run `VTS` programs in `python` include the following the header
 
+```
+    from pythonnet import set_runtime
+    set_runtime("coreclr")
+
     import clr
-    clr.AddReference("/path/to/vts/src/Vts/publish/local/Vts.dll")    
+    clr.AddReference("/path/to/libraries/Vts.dll")    
     
     from Vts import *
     from Vts.Common import *
@@ -88,3 +83,4 @@ To run `VTS` programs in `python` include the following the header
     from Vts.MonteCarlo.PhotonData import *
     from Vts.MonteCarlo.PostProcessing import *
     from System import Array, Double
+```
