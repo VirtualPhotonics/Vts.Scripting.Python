@@ -4,21 +4,21 @@ This information will likely change as more support for `python` and `.NET` is i
 
 ## Installation details
 
-### Step 1: Install .NET 6
+### Step 1: Install .NET 8
 
-You will need version 6 of .NET which is available from Microsoft below
+You will need version 8 of .NET which is available from Microsoft below
 
-https://dotnet.microsoft.com/en-us/download/dotnet/6.0
+https://dotnet.microsoft.com/en-us/download/dotnet/8.0
 
 
 ***On MacOS:***
-Save everything to `$HOME/Documents/Code/dotnet6`
+Save everything to `$HOME/Documents/Code/dotnet8`
 
 Do not forget to update your `~/.bash_profile` or whatever you use so that this directory is in your path.  Also define `DOTNET_ROOT` 
 
-    PATH=$PATH:$HOME/Documents/Code/dotnet6
+    PATH=$PATH:$HOME/Documents/Code/dotnet8
   
-    export DOTNET_ROOT=$HOME/Documents/Code/dotnet6
+    export DOTNET_ROOT=$HOME/Documents/Code/dotnet8
 
 ### Step 2: Clone the scripting repository
 
@@ -44,7 +44,7 @@ Next start a `JupyterLab` notebook to verify that things are installed correctly
     import clr
     clr.AddReference("System")
     from System import Console
-    Console.WriteLine("Hello from .NET 6!")
+    Console.WriteLine("Hello from .NET 8!")
 
 The final test is importing from `Vts.dll`
     
