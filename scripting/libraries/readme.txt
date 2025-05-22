@@ -1,1 +1,0 @@
-The VTS libraries should be copied into this folder. Get the latest VTS library (VTS.dll) and its dependencies from the releases section of this repository https://github.com/VirtualPhotonics/Vts.Scripting.Python/releases
