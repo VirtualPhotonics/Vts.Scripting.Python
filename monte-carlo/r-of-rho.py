@@ -1,12 +1,11 @@
 # This is an example of python code using VTS to plot R(rho) using MCCL
 #
 # Import the Operating System so we can access the files for the VTS library
-import libraries
 from pythonnet import load
 load('coreclr')
 import clr
 import os
-file = './libraries/Vts.dll'
+file = '../libraries/Vts.dll'
 print('Does this filepath exist?', os.path.isfile(file))
 clr.AddReference(os.path.abspath(file))
 
@@ -41,8 +40,8 @@ detectors = Array.CreateInstance(IDetectorInput,1)
 detectors[0] = detectorInput
 
 simulationInput = SimulationInput()
-simulationInput.N=1000
-simulationInput.DetectorInputs= detectors
+simulationInput.N = 1000
+simulationInput.DetectorInputs = detectors
 
 # create the simulation
 simulation = MonteCarloSimulation(simulationInput)
