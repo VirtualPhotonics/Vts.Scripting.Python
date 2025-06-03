@@ -7,7 +7,6 @@ load('coreclr')
 import clr
 import os
 file = '../libraries/Vts.dll'
-print('Does this filepath exist?', os.path.isfile(file))
 clr.AddReference(os.path.abspath(file))
 import numpy as np
 import plotly.graph_objects as go
@@ -30,23 +29,21 @@ from System import Array, Object
 # Construct a scatterer
 scatterer = PowerLawScatterer(1.2, 1.42)
 # Setup wavelengths in visible and NIR spectral regimes
-wavelengths = Array.CreateInstance(float, 600)
-for i in range(0, len(wavelengths)-1):
-    wavelengths[i] = 400.0 + i 
-print('wavelengths[0]=',wavelengths[0])
+wavelengths = Array.CreateInstance(float, 13)
+for i in range(0, len(wavelengths)):
+    wavelengths[i] = 400.0 + 50 * i
 # Define rho
 rho = 1.0
 # Setup the values for the measured data
+measuredData = [70.0, 30.0, 0.8]
 chromophoresMeasuredData = Array.CreateInstance(IChromophoreAbsorber, 3)
-chromophoresMeasuredData[0] = ChromophoreAbsorber(ChromophoreType.HbO2, 70)
-chromophoresMeasuredData[1] = ChromophoreAbsorber(ChromophoreType.Hb, 30)
-chromophoresMeasuredData[2] = ChromophoreAbsorber(ChromophoreType.H2O, 0.8)
+chromophoresMeasuredData[0] = ChromophoreAbsorber(ChromophoreType.HbO2, measuredData[0])
+chromophoresMeasuredData[1] = ChromophoreAbsorber(ChromophoreType.Hb, measuredData[1])
+chromophoresMeasuredData[2] = ChromophoreAbsorber(ChromophoreType.H2O, measuredData[2])
 opsMeasured = Tissue(chromophoresMeasuredData, scatterer, "", n=1.4).GetOpticalProperties(wavelengths)
-print('opsMeasured[0]=',opsMeasured[0])
 # Create measurements using Nurbs-based white Monte Carlo forward solver
 measurementForwardSolver = NurbsForwardSolver()
-measuredData = measurementForwardSolver.ROfRho(opsMeasured, rho)
-print('measuredData[0]=',measuredData[0])
+measuredROfRho = measurementForwardSolver.ROfRho(opsMeasured, rho)
 # Create a forward solver as a model function for inversion
 forwardSolverForInversion = NurbsForwardSolver()
 
@@ -83,6 +80,7 @@ chromophoresInitialGuess[1] = ChromophoreAbsorber(ChromophoreType.Hb, initialGue
 chromophoresInitialGuess[2] = ChromophoreAbsorber(ChromophoreType.H2O, initialGuess[2])
 # Compose tissue for initial guess data to obtain OPs
 opsInitialGuess = Tissue(chromophoresInitialGuess, scatterer, "", n=1.4).GetOpticalProperties(wavelengths)
+initialGuessROfRho = forwardSolverForInversion.ROfRho(opsInitialGuess, rho)
 # Run the levenberg-marquardt inversion
 optimizer = MPFitLevenbergMarquardtOptimizer()
 initialGuess = Array.CreateInstance(float, 3)
@@ -101,32 +99,32 @@ params = [ wavelengths, rho, scatterer ]
 initialGuessCopy = initialGuess
 
 # try calling our LM
-fit = optimizer.Solve(initialGuessCopy, parametersToFit, measuredData, measuredDataWeight, 
+fit = optimizer.Solve(initialGuessCopy, parametersToFit, measuredROfRho, measuredDataWeight, 
    CalculateReflectanceFuncVsWavelengthFromChromophoreConcentration, params)
-print('fit=',fit)
 # Calculate final reflectance from model at fit values
 chromophoresFit = Array.CreateInstance(IChromophoreAbsorber, 3)
 chromophoresFit[0] = ChromophoreAbsorber(ChromophoreType.HbO2, fit.x[0])
 chromophoresFit[1] = ChromophoreAbsorber(ChromophoreType.Hb, fit.x[1])
 chromophoresFit[2] = ChromophoreAbsorber(ChromophoreType.H2O, fit.x[2])
 opsFit = Tissue(chromophoresFit, scatterer, "", n=1.4).GetOpticalProperties(wavelengths)
-fitReflectanceSpectrum = forwardSolverForInversion.ROfRho(opsFit, rho)
+fitROfRho= forwardSolverForInversion.ROfRho(opsFit, rho)
 # plot the results using Plotly
 xLabel = "wavelengths [nm]"
 yLabel = "R(wavelength) [mm-2]"
 wvs = [w for w in wavelengths]
-print('wvs[0]=',wvs[0])
 # plot measured data
-meas = [m for m in measuredData]
+meas = [m for m in measuredROfRho]
 chart = go.Figure()
 chart.add_trace(go.Scatter(x=wvs, y=meas, mode='markers', name='measured data'))
 # plot initial guess data
-initialGuessR = forwardSolverForInversion.ROfRho(opsInitialGuess, rho)
-ig = [i for i in initialGuessR]
+ig = [i for i in initialGuessROfRho]
 chart.add_trace(go.Scatter(x=wvs, y=ig, mode='markers', name='initial guess'))
 # plot fit
-fit = [f for f in fitReflectanceSpectrum]
-chart.add_trace(go.Scatter(x=wvs, y=fit, mode='markers', name='fit'))
+conv = [f for f in fitROfRho]
+chart.add_trace(go.Scatter(x=wvs, y=conv, mode='markers', name='converged'))
 chart.update_layout( title="R(wavelength) [mm-2]", xaxis_title=xLabel, yaxis_title=yLabel)
 chart.show(renderer="browser")
-
+# output results
+print("Meas =    [%5.3f %5.3f %5.3f]" % (measuredData[0], measuredData[1], measuredData[2]))
+print("IG   =    [%5.3f %5.3f %5.3f]" % (initialGuess[0], initialGuess[1], initialGuess[2]))
+print("Conv =    [%5.3f %5.3f %5.3f]" % (fit.x[0], fit.x[1], fit.x[2]))
