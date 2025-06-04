@@ -121,10 +121,16 @@ ig = [i for i in initialGuessROfRho]
 chart.add_trace(go.Scatter(x=wvs, y=ig, mode='markers', name='initial guess'))
 # plot fit
 conv = [f for f in fitROfRho]
-chart.add_trace(go.Scatter(x=wvs, y=conv, mode='markers', name='converged'))
-chart.update_layout( title="R(wavelength) [mm-2]", xaxis_title=xLabel, yaxis_title=yLabel)
+chart.add_trace(go.Scatter(x=wvs, y=conv, mode='lines', name='converged'))
+chart.update_layout( title="ROfRho (inverse solution for chromophore concentrations, multiple wavelenths, single rho)", xaxis_title=xLabel, yaxis_title=yLabel)
 chart.show(renderer="browser")
 # output results
 print("Meas =    [%5.3f %5.3f %5.3f]" % (measuredData[0], measuredData[1], measuredData[2]))
-print("IG   =    [%5.3f %5.3f %5.3f]" % (initialGuess[0], initialGuess[1], initialGuess[2]))
-print("Conv =    [%5.3f %5.3f %5.3f]" % (fit.x[0], fit.x[1], fit.x[2]))
+print("IG   =    [%5.3f %5.3f %5.3f] Chi2=%5.3e" % (initialGuess[0], initialGuess[1], initialGuess[2],
+                np.dot(measuredROfRho,initialGuessROfRho)))
+print("Conv =    [%5.3f %5.3f %5.3f] Chi2=%5.3e" % (fit.x[0], fit.x[1], fit.x[2],
+                np.dot(measuredROfRho,fitROfRho)))
+print("error =   [%5.3f %5.3f %5.3f]" % (abs((measuredData[0]-fit.x[0])/measuredData[0]),
+                abs((measuredData[1]-fit.x[1])/measuredData[1]),
+                abs((measuredData[2]-fit.x[2])/measuredData[2])))
+
