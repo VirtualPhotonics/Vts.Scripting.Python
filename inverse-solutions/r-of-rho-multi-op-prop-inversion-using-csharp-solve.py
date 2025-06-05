@@ -25,7 +25,7 @@ from Vts.MonteCarlo.Detectors import *
 from Vts.MonteCarlo.Factories import *
 from Vts.MonteCarlo.PhotonData import *
 from Vts.MonteCarlo.PostProcessing import *
-from System import Array, Object
+from System import Array, Object, Func
 # Construct a scatterer
 scatterer = PowerLawScatterer(1.2, 1.42)
 # Setup wavelengths in visible and NIR spectral regimes
@@ -42,7 +42,7 @@ chromophoresMeasuredData[1] = ChromophoreAbsorber(ChromophoreType.Hb, measuredDa
 chromophoresMeasuredData[2] = ChromophoreAbsorber(ChromophoreType.H2O, measuredData[2])
 opsMeasured = Tissue(chromophoresMeasuredData, scatterer, "", n=1.4).GetOpticalProperties(wavelengths)
 # Create measurements using Nurbs-based white Monte Carlo forward solver
-measurementForwardSolver = NurbsForwardSolver()
+measurementForwardSolver = PointSourceSDAForwardSolver()
 measuredROfRho = measurementForwardSolver.ROfRho(opsMeasured, rho)
 # Create a forward solver as a model function for inversion
 forwardSolverForInversion = NurbsForwardSolver()
@@ -51,26 +51,26 @@ forwardSolverForInversion = NurbsForwardSolver()
 # params=[wavelengths, rho, scatterer]
 def CalculateReflectanceFuncVsWavelengthFromChromophoreConcentration(
         chromophoreConcentration, params):   
-   # Create a forward solve model function to solve inverse
-   def forwardFunc(chromophoreConcentration, params):
-      # following sub for func = GetForwardReflectanceFuncForOptimization(forwardSolverForInversion,
-      # solutionDomainType)
-      # Create an array of chromophore absorbers based on values
-      chromophoresLocal = Array.CreateInstance(IChromophoreAbsorber, 3)
-      chromophoresLocal[0] = ChromophoreAbsorber(ChromophoreType.HbO2, chromophoreConcentration[0])
-      chromophoresLocal[1] = ChromophoreAbsorber(ChromophoreType.Hb, chromophoreConcentration[1])
-      chromophoresLocal[2] = ChromophoreAbsorber(ChromophoreType.H2O, chromophoreConcentration[2])
-      # Compose local tissue to obtain optical properties
-      opsLocal = Tissue(chromophoresLocal, params[2], "", n=1.4).GetOpticalProperties(params[0])
-      print('opsLocal[0]=',opsLocal[0])
-      # Compute reflectance for local absorbers
-      modelDataLocal = forwardSolverForInversion.ROfRho(opsLocal, params[1]) 
-      modelDataLocalCSharp = Array.CreateInstance(float, len(wavelengths))
-      # convert to C# format
-      for i in range(0, len(params[0])-1):
-          modelDataLocalCSharp[i] = modelDataLocal[i]
-      return modelDataLocalCSharp
-      return forwardFunc(chromophoreConcentration, params)
+    # following sub for func = GetForwardReflectanceFuncForOptimization(forwardSolverForInversion,
+    # solutionDomainType)
+    # Create an array of chromophore absorbers based on values
+    chromophoresLocal = Array.CreateInstance(IChromophoreAbsorber, 3)
+    chromophoresLocal[0] = ChromophoreAbsorber(ChromophoreType.HbO2, chromophoreConcentration[0])
+    chromophoresLocal[1] = ChromophoreAbsorber(ChromophoreType.Hb, chromophoreConcentration[1])
+    chromophoresLocal[2] = ChromophoreAbsorber(ChromophoreType.H2O, chromophoreConcentration[2])
+    # Compose local tissue to obtain optical properties
+    opsLocal = Tissue(chromophoresLocal, params[2], "", n=1.4).GetOpticalProperties(params[0])
+    print('opsLocal[0]=',opsLocal[0])
+    # Compute reflectance for local absorbers
+    modelDataLocal = forwardSolverForInversion.ROfRho(opsLocal, params[1]) 
+    modelDataLocalCSharp = Array.CreateInstance(float, len(wavelengths))
+    # convert to C# format
+    for i in range(0, len(params[0])-1):
+      modelDataLocalCSharp[i] = modelDataLocal[i]
+    return modelDataLocalCSharp
+
+# Convert the Python function to a .NET Func delegate
+forward_func = Func[Array[float], Array[Object], Array[float]](CalculateReflectanceFuncVsWavelengthFromChromophoreConcentration)
 
 # Run the inversion: set up initial guess
 initialGuess = [70.0, 30.0, 0.8]
@@ -100,12 +100,12 @@ initialGuessCopy = initialGuess
 
 # try calling our LM
 fit = optimizer.Solve(initialGuessCopy, parametersToFit, measuredROfRho, measuredDataWeight, 
-   CalculateReflectanceFuncVsWavelengthFromChromophoreConcentration, params)
+   forward_func, params)
 # Calculate final reflectance from model at fit values
 chromophoresFit = Array.CreateInstance(IChromophoreAbsorber, 3)
-chromophoresFit[0] = ChromophoreAbsorber(ChromophoreType.HbO2, fit.x[0])
-chromophoresFit[1] = ChromophoreAbsorber(ChromophoreType.Hb, fit.x[1])
-chromophoresFit[2] = ChromophoreAbsorber(ChromophoreType.H2O, fit.x[2])
+chromophoresFit[0] = ChromophoreAbsorber(ChromophoreType.HbO2, fit[0])
+chromophoresFit[1] = ChromophoreAbsorber(ChromophoreType.Hb, fit[1])
+chromophoresFit[2] = ChromophoreAbsorber(ChromophoreType.H2O, fit[2])
 opsFit = Tissue(chromophoresFit, scatterer, "", n=1.4).GetOpticalProperties(wavelengths)
 fitROfRho= forwardSolverForInversion.ROfRho(opsFit, rho)
 # plot the results using Plotly
@@ -128,9 +128,9 @@ chart.show(renderer="browser")
 print("Meas =    [%5.3f %5.3f %5.3f]" % (measuredData[0], measuredData[1], measuredData[2]))
 print("IG   =    [%5.3f %5.3f %5.3f] Chi2=%5.3e" % (initialGuess[0], initialGuess[1], initialGuess[2],
                 np.dot(measuredROfRho,initialGuessROfRho)))
-print("Conv =    [%5.3f %5.3f %5.3f] Chi2=%5.3e" % (fit.x[0], fit.x[1], fit.x[2],
+print("Conv =    [%5.3f %5.3f %5.3f] Chi2=%5.3e" % (fit[0], fit[1], fit[2],
                 np.dot(measuredROfRho,fitROfRho)))
-print("error =   [%5.3f %5.3f %5.3f]" % (abs((measuredData[0]-fit.x[0])/measuredData[0]),
-                abs((measuredData[1]-fit.x[1])/measuredData[1]),
-                abs((measuredData[2]-fit.x[2])/measuredData[2])))
+print("error =   [%5.3f %5.3f %5.3f]" % (abs((measuredData[0]-fit[0])/measuredData[0]),
+                abs((measuredData[1]-fit[1])/measuredData[1]),
+                abs((measuredData[2]-fit[2])/measuredData[2])))
 
