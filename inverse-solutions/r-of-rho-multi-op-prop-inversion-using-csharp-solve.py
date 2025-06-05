@@ -51,9 +51,6 @@ forwardSolverForInversion = PointSourceSDAForwardSolver()
 # params=[wavelengths, rho, scatterer]
 def CalculateReflectanceFuncVsWavelengthFromChromophoreConcentration(
         chromophoreConcentration, params):   
-    print('params[0][0]=',params[0][0])
-    print('params[1]=',params[1])
-    print('params[2]=',params[2])
     # Create an array of chromophore absorbers based on values
     chromophoresLocal = Array.CreateInstance(IChromophoreAbsorber, 3)
     chromophoresLocal[0] = ChromophoreAbsorber(ChromophoreType.HbO2, chromophoreConcentration[0])
@@ -68,7 +65,6 @@ def CalculateReflectanceFuncVsWavelengthFromChromophoreConcentration(
     # convert to C# format
     for i in range(0, len(params[0])-1):
       modelDataLocalCSharp[i] = modelDataLocal[i]
-    print('modelDataLocalCSharp[0]=',modelDataLocalCSharp[0])
     return modelDataLocalCSharp
 
 # Convert the Python function to a .NET Func delegate

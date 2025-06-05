@@ -66,7 +66,6 @@ def CalculateReflectanceVsWavelengthFromChromophoreConcentration(
    modelDataForReturn= Array.CreateInstance(float, len(wavelengths))
    for i in range(0, len(wavelengths)):
         modelDataForReturn[i] = modelDataLocal[i]
-   print('modelDataForReturn[0]=',modelDataForReturn[0])
    return modelDataForReturn
 
 # func for residual
