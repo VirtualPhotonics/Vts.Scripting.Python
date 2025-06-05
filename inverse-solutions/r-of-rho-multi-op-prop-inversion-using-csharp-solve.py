@@ -89,8 +89,8 @@ initialGuessCopy = Array.CreateInstance(float, 3)
 initialGuessCopy = initialGuess
 parametersToFit = Array.CreateInstance(bool, 3)
 parametersToFit = [True, True, True]
-measuredDataWeight = Array.CreateInstance(float, 3)
-measuredDataWeight = [1, 1, 1]
+measuredDataWeight = Array.CreateInstance(float, len(measuredROfRho))
+measuredDataWeight = [1] * len(measuredDataWeight)
 params = Array.CreateInstance(Object, 3)
 params = [wavelengths, rho, scatterer]
 
