@@ -42,17 +42,18 @@ chromophoresMeasuredData[1] = ChromophoreAbsorber(ChromophoreType.Hb, measuredDa
 chromophoresMeasuredData[2] = ChromophoreAbsorber(ChromophoreType.H2O, measuredData[2])
 opsMeasured = Tissue(chromophoresMeasuredData, scatterer, "", n=1.4).GetOpticalProperties(wavelengths)
 # Create measurements using Nurbs-based white Monte Carlo forward solver
-measurementForwardSolver = PointSourceSDAForwardSolver()
+measurementForwardSolver = NurbsForwardSolver()
 measuredROfRho = measurementForwardSolver.ROfRho(opsMeasured, rho)
 # Create a forward solver as a model function for inversion
-forwardSolverForInversion = NurbsForwardSolver()
+forwardSolverForInversion = PointSourceSDAForwardSolver()
 
 # Declare local forward reflectance function that computes reflectance from chromophores
 # params=[wavelengths, rho, scatterer]
 def CalculateReflectanceFuncVsWavelengthFromChromophoreConcentration(
         chromophoreConcentration, params):   
-    # following sub for func = GetForwardReflectanceFuncForOptimization(forwardSolverForInversion,
-    # solutionDomainType)
+    print('params[0][0]=',params[0][0])
+    print('params[1]=',params[1])
+    print('params[2]=',params[2])
     # Create an array of chromophore absorbers based on values
     chromophoresLocal = Array.CreateInstance(IChromophoreAbsorber, 3)
     chromophoresLocal[0] = ChromophoreAbsorber(ChromophoreType.HbO2, chromophoreConcentration[0])
@@ -67,6 +68,7 @@ def CalculateReflectanceFuncVsWavelengthFromChromophoreConcentration(
     # convert to C# format
     for i in range(0, len(params[0])-1):
       modelDataLocalCSharp[i] = modelDataLocal[i]
+    print('modelDataLocalCSharp[0]=',modelDataLocalCSharp[0])
     return modelDataLocalCSharp
 
 # Convert the Python function to a .NET Func delegate
@@ -83,20 +85,14 @@ opsInitialGuess = Tissue(chromophoresInitialGuess, scatterer, "", n=1.4).GetOpti
 initialGuessROfRho = forwardSolverForInversion.ROfRho(opsInitialGuess, rho)
 # Run the levenberg-marquardt inversion
 optimizer = MPFitLevenbergMarquardtOptimizer()
-initialGuess = Array.CreateInstance(float, 3)
-initialGuess[0] = 70
-initialGuess[1] = 30
-initialGuess[2] = 0.8 
-parametersToFit = Array.CreateInstance(bool, 3)
-parametersToFit[0] = True
-parametersToFit[1] = True
-parametersToFit[2] = True 
-measuredDataWeight = Array.CreateInstance(float, 3)
-measuredDataWeight[0] = 1
-measuredDataWeight[1] = 1
-measuredDataWeight[2] = 1
-params = [ wavelengths, rho, scatterer ]
+initialGuessCopy = Array.CreateInstance(float, 3)
 initialGuessCopy = initialGuess
+parametersToFit = Array.CreateInstance(bool, 3)
+parametersToFit = [True, True, True]
+measuredDataWeight = Array.CreateInstance(float, 3)
+measuredDataWeight = [1, 1, 1]
+params = Array.CreateInstance(Object, 3)
+params = [wavelengths, rho, scatterer]
 
 # try calling our LM
 fit = optimizer.Solve(initialGuessCopy, parametersToFit, measuredROfRho, measuredDataWeight, 
