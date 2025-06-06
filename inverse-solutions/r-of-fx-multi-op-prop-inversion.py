@@ -41,9 +41,11 @@ scattererMeasuredData = PowerLawScatterer(measuredData[2], measuredData[3])
 chromophoresMeasuredData = Array.CreateInstance(IChromophoreAbsorber, 2)
 chromophoresMeasuredData[0] = ChromophoreAbsorber(ChromophoreType.HbO2, measuredData[0])
 chromophoresMeasuredData[1] = ChromophoreAbsorber(ChromophoreType.Hb, measuredData[1])
+# len(opsMeasured)=8 per number of wavelengths
 opsMeasured = Tissue(chromophoresMeasuredData, scattererMeasuredData, "", n=1.4).GetOpticalProperties(wavelengths)
 # Create measurements using Nurbs-based white Monte Carlo forward solver
 measurementForwardSolver = NurbsForwardSolver()
+# len(measuredROfFx)=16 (#wavelengths)x(#fxs) organized [op1fx1, op1fx2, op2fx1, op2fx2, ...]
 measuredROfFx= measurementForwardSolver.ROfFx(opsMeasured, fxs)
 # Create a forward solver as a model function for inversion
 forwardSolverForInversion = PointSourceSDAForwardSolver()
@@ -63,11 +65,9 @@ def CalculateReflectanceVsWavelengthFromChromophoreConcentration(
    scattererLocal = PowerLawScatterer(valuesSought[2], valuesSought[3])
    # Compose local tissue to obtain optical properties
    opsLocal = Tissue(chromophoresLocal, scattererLocal, "", n=1.4).GetOpticalProperties(wavelengths)
-   print('opsLocal[0]=',opsLocal[0])
    # Compute reflectance for local absorbers
    modelDataLocal = Array.CreateInstance(float, len(wavelengths) * len(fxs))
    modelDataLocal = forwardSolver.ROfFx(opsLocal, fxs) 
-   print('modelDataLocal dims=',len(modelDataLocal))
    modelDataForReturn= Array.CreateInstance(float, len(wavelengths) * len(fxs))
    for i in range(0, len(wavelengths) * len(fxs)):
         modelDataForReturn[i] = modelDataLocal[i]
@@ -107,28 +107,32 @@ scattererFit = PowerLawScatterer(fit.x[2], fit.x[3])
 # Compose tissue for fit data to obtain OPs
 opsFit= Tissue(chromophoresFit, scattererFit, "", n=1.4).GetOpticalProperties(wavelengths)
 fitROfFx = forwardSolverForInversion.ROfFx(opsFit, fxs) 
-# plot the results using Plotly
+# plot the results using Plotly data organization [op1fx1, op1fx2, op2fx1, op2,fx2,...]
+chart = go.Figure()
 xLabel = "wavelength [nm]"
 yLabel = "R(wavelength)"
 wvs = [w for w in wavelengths]
-# plot measured data
-meas = [m for m in measuredROfFx]
-chart = go.Figure()
-chart.add_trace(go.Scatter(x=wvs, y=meas, mode='markers', name='measured data'))
+# plot measured data first fx first
+meas= [m for m in measuredROfFx]
+chart.add_trace(go.Scatter(x=wvs, y=meas[::2], mode='markers', name='measured data: fx1'))
+chart.add_trace(go.Scatter(x=wvs, y=meas[1:len(meas):2], mode='markers', name='measured data: fx2'))
 # plot initial guess data
 ig = [i for i in initialGuessROfFx]
-chart.add_trace(go.Scatter(x=wvs, y=ig, mode='markers', name='initial guess'))
-# plot fit
+chart.add_trace(go.Scatter(x=wvs, y=ig[::2], mode='markers', name='initial guess: fx1'))
+chart.add_trace(go.Scatter(x=wvs, y=ig[1:len(ig):2], mode='markers', name='initial guess: fx2'))
+# plot fit: need to organize by fx
 conv = [f for f in fitROfFx]
-chart.add_trace(go.Scatter(x=wvs, y=conv, mode='lines', name='converged'))
+chart.add_trace(go.Scatter(x=wvs, y=conv[::2], mode='lines', name='converged: fx1'))
+chart.add_trace(go.Scatter(x=wvs, y=conv[1:len(conv):2], mode='lines', name='converged: fx2'))
 chart.update_layout( title="ROfFx (inverse solution for chromophore concentrations, multiple wavelengths, multiple fx)", xaxis_title=xLabel, yaxis_title=yLabel)
+
 chart.show(renderer="browser")
 # output results
 print("Meas =    [%5.3f %5.3f %5.3f %5.3f]" % (measuredData[0], measuredData[1], measuredData[2], measuredData[3]))
 print("IG   =    [%5.3f %5.3f %5.3f %5.3f] Chi2=%5.3e" % (
                  initialGuess[0], initialGuess[1], initialGuess[2], initialGuess[3],
                  np.dot(measuredROfFx,initialGuessROfFx)))
-print("Conv =    [%5.3f %5.3f %5.3f] Chi2=%5.3e" % (fit.x[0], fit.x[1], fit.x[2], fit.x[3],
+print("Conv =    [%5.3f %5.3f %5.3f %5.3f] Chi2=%5.3e" % (fit.x[0], fit.x[1], fit.x[2], fit.x[3],
                  np.dot(measuredROfFx,fitROfFx)))
 print("error =   [%5.3f %5.3f %5.3f %5.3f]" % (
                  abs((measuredData[0]-fit.x[0])/measuredData[0]),
