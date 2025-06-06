@@ -1,5 +1,6 @@
 # This is an example of python code using VTS to provide inverse solution
-# for R(rho) to find chromophore concentrations and power law coefficients
+# for R(rho) to find chromophore concentrations and power law coefficients.
+# The optimization is performed by a python library scipy.
 #
 # Import the Operating System so we can access the files for the VTS library
 from pythonnet import load
@@ -115,7 +116,7 @@ chart.add_trace(go.Scatter(x=wvs, y=ig, mode='markers', name='initial guess'))
 # plot fit
 conv = [f for f in fitROfRho]
 chart.add_trace(go.Scatter(x=wvs, y=conv, mode='lines', name='converged'))
-chart.update_layout( title="ROfRho (inverse solution for chromophore concentrations, multiple wavelenths, single rho)", xaxis_title=xLabel, yaxis_title=yLabel)
+chart.update_layout( title="ROfRho (inverse solution for chromophore concentrations, multiple wavelengths, single rho)", xaxis_title=xLabel, yaxis_title=yLabel)
 chart.show(renderer="browser")
 # output results
 print("Meas =    [%5.3f %5.3f %5.3f]" % (measuredData[0], measuredData[1], measuredData[2]))
