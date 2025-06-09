@@ -60,7 +60,8 @@ def CalculateReflectanceVsWavelengthFromChromophoreConcentration(
    chromophoresLocal[2] = ChromophoreAbsorber(ChromophoreType.H2O, chromophoreConcentration[2])
    # Compose local tissue to obtain optical properties
    opsLocal = Tissue(chromophoresLocal, scatterer, "", n=1.4).GetOpticalProperties(wavelengths)
-   print('opsLocal[0]=',opsLocal[0])
+   print("iter:[HbO2,Hb,H2O]=[%3.2f %3.2f %3.2f]" % (
+       chromophoreConcentration[0],chromophoreConcentration[1],chromophoreConcentration[2]))
    # Compute reflectance for local absorbers
    modelDataLocal = Array.CreateInstance(float, len(wavelengths))
    modelDataLocal = forwardSolver.ROfRho(opsLocal, rho) 
@@ -121,9 +122,12 @@ chart.show(renderer="browser")
 # output results
 print("Meas =    [%5.3f %5.3f %5.3f]" % (measuredData[0], measuredData[1], measuredData[2]))
 print("IG   =    [%5.3f %5.3f %5.3f] Chi2=%5.3e" % (initialGuess[0], initialGuess[1], initialGuess[2],
-                np.dot(measuredROfRho,initialGuessROfRho)))
+                np.dot(np.subtract(measuredROfRho,initialGuessROfRho),
+                       np.subtract(measuredROfRho,initialGuessROfRho))))
 print("Conv =    [%5.3f %5.3f %5.3f] Chi2=%5.3e" % (fit.x[0], fit.x[1], fit.x[2],
-                np.dot(measuredROfRho,fitROfRho)))
-print("error =   [%5.3f %5.3f %5.3f]" % (abs((measuredData[0]-fit.x[0])/measuredData[0]),
-                abs((measuredData[1]-fit.x[1])/measuredData[1]),
-                abs((measuredData[2]-fit.x[2])/measuredData[2])))
+                np.dot(np.subtract(measuredROfRho,fitROfRho),
+                       np.subtract(measuredROfRho,fitROfRho))))
+print("error =   [%5.3f %5.3f %5.3f]%%" % (
+                100*abs((measuredData[0]-fit.x[0])/measuredData[0]),
+                100*abs((measuredData[1]-fit.x[1])/measuredData[1]),
+                100*abs((measuredData[2]-fit.x[2])/measuredData[2])))

@@ -67,6 +67,8 @@ def CalculateReflectanceVsWavelengthFromChromophoreConcAndScatterer(
    scattererLocal = PowerLawScatterer(valuesSought[2], valuesSought[3])
    # Compose local tissue to obtain optical properties
    opsLocal = Tissue(chromophoresLocal, scattererLocal, "", n=1.4).GetOpticalProperties(wavelengths)
+   print("iter:[Hb HbO2 A b]=[%5.3f %5.3f %5.3f %5.3f]" % (
+         valuesSought[0], valuesSought[1], valuesSought[2],valuesSought[3]))
    # Compute reflectance for local absorbers
    modelDataLocal=np.concatenate(
         [np.array(forwardSolver.ROfFx(opsLocal, fxs[0]), dtype=float), 
@@ -136,14 +138,15 @@ chart.update_layout( title="ROfFx (inverse solution for chromophore concentratio
 
 chart.show(renderer="browser")
 # output results
-print("Meas =    [%5.3f %5.3f %5.3f %5.3f]" % (measuredData[0], measuredData[1], measuredData[2], measuredData[3]))
+print("Meas =    [%5.3f %5.3f %5.3f %5.3f]" % (
+                 measuredData[0], measuredData[1], measuredData[2], measuredData[3]))
 print("IG   =    [%5.3f %5.3f %5.3f %5.3f] Chi2=%5.3e" % (
                  initialGuess[0], initialGuess[1], initialGuess[2], initialGuess[3],
-                 np.dot(measuredROfFx,initialGuessROfFx)))
+                 np.dot(measuredROfFx-initialGuessROfFx,measuredROfFx-initialGuessROfFx)))
 print("Conv =    [%5.3f %5.3f %5.3f %5.3f] Chi2=%5.3e" % (fit.x[0], fit.x[1], fit.x[2], fit.x[3],
-                 np.dot(measuredROfFx,fitROfFx)))
-print("error =   [%5.3f %5.3f %5.3f %5.3f]" % (
-                 abs((measuredData[0]-fit.x[0])/measuredData[0]),
-                 abs((measuredData[1]-fit.x[1])/measuredData[1]),
-                 abs((measuredData[2]-fit.x[2])/measuredData[2]),
-                 abs((measuredData[3]-fit.x[3])/measuredData[3])))
+                 np.dot(measuredROfFx-fitROfFx,measuredROfFx-fitROfFx)))
+print("error =   [%3.2f %3.2f %3.2f %3.2f]%%" % (
+                 100*abs((measuredData[0]-fit.x[0])/measuredData[0]),
+                 100*abs((measuredData[1]-fit.x[1])/measuredData[1]),
+                 100*abs((measuredData[2]-fit.x[2])/measuredData[2]),
+                 100*abs((measuredData[3]-fit.x[3])/measuredData[3])))
