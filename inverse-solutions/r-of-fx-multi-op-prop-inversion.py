@@ -73,10 +73,7 @@ def CalculateReflectanceVsWavelengthFromChromophoreConcAndScatterer(
    modelDataLocal=np.concatenate(
         [np.array(forwardSolver.ROfFx(opsLocal, fxs[0]), dtype=float), 
          np.array(forwardSolver.ROfFx(opsLocal, fxs[1]), dtype=float)])
-   modelDataForReturn=Array.CreateInstance(float, len(wavelengths)*len(fxs))
-   for i in range(0, len(fxs)*len(wavelengths)-1):
-        modelDataForReturn[i] = modelDataLocal[i]
-   return modelDataForReturn
+   return modelDataLocal
 
 # func for residual
 def residual(valuesSought, wavelengths, fxs, measuredROfFx, forwardSolver):

@@ -64,11 +64,7 @@ def CalculateReflectanceFuncVsWavelengthFromChromophoreConcentration(
        chromophoreConcentration[0],chromophoreConcentration[1],chromophoreConcentration[2]))
     # Compute reflectance for local absorbers
     modelDataLocal = forwardSolverForInversion.ROfRho(opsLocal, params[1]) 
-    modelDataLocalCSharp = Array.CreateInstance(float, len(wavelengths))
-    # convert to C# format
-    for i in range(0, len(params[0])-1):
-      modelDataLocalCSharp[i] = modelDataLocal[i]
-    return modelDataLocalCSharp
+    return modelDataLocal
 
 # Convert the Python function to a .NET Func delegate
 forward_func = Func[Array[float], Array[Object], Array[float]](CalculateReflectanceFuncVsWavelengthFromChromophoreConcentration)

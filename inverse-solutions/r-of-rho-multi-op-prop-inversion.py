@@ -65,10 +65,7 @@ def CalculateReflectanceVsWavelengthFromChromophoreConcentration(
    # Compute reflectance for local absorbers
    modelDataLocal = Array.CreateInstance(float, len(wavelengths))
    modelDataLocal = forwardSolver.ROfRho(opsLocal, rho) 
-   modelDataForReturn= Array.CreateInstance(float, len(wavelengths))
-   for i in range(0, len(wavelengths)):
-        modelDataForReturn[i] = modelDataLocal[i]
-   return modelDataForReturn
+   return modelDataLocal
 
 # func for residual
 def residual(chromophoreConcentration, wavelengths, rho, scatterer, measuredROfRho, forwardSolver):
