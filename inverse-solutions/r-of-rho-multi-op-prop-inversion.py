@@ -44,7 +44,7 @@ chromophoresMeasuredData[2] = ChromophoreAbsorber(ChromophoreType.H2O, measuredD
 opsMeasured = Tissue(chromophoresMeasuredData, scatterer, "", n=1.4).GetOpticalProperties(wavelengths)
 # Create measurements using Nurbs-based white Monte Carlo forward solver
 measurementForwardSolver = NurbsForwardSolver()
-measuredROfRho= measurementForwardSolver.ROfRho(opsMeasured, rho)
+rOfRhoMeasured = measurementForwardSolver.ROfRho(opsMeasured, rho)
 # Create a forward solver as a model function for inversion
 forwardSolverForInversion = PointSourceSDAForwardSolver()
 
@@ -84,14 +84,14 @@ chromophoresInitialGuess[1] = ChromophoreAbsorber(ChromophoreType.Hb, initialGue
 chromophoresInitialGuess[2] = ChromophoreAbsorber(ChromophoreType.H2O, initialGuess[2])
 # Compose tissue for initial guess data to obtain OPs
 opsInitialGuess = Tissue(chromophoresInitialGuess, scatterer, "", n=1.4).GetOpticalProperties(wavelengths)
-initialGuessROfRho = forwardSolverForInversion.ROfRho(opsInitialGuess, rho) 
+rOfRhoInitialGuess= forwardSolverForInversion.ROfRho(opsInitialGuess, rho) 
 # Run the levenberg-marquardt inversion
 from scipy.optimize import least_squares
 fit = least_squares(
    residual,
    initialGuess, 
    ftol=1e-9, xtol=1e-9, max_nfev=10000, # max_nfev needs to be integer
-   args=(wavelengths, rho, scatterer, measuredROfRho, forwardSolverForInversion), 
+   args=(wavelengths, rho, scatterer, rOfRhoMeasured, forwardSolverForInversion), 
    method='lm')
 # Calculate final reflectance from model at fit values
 chromophoresFit = Array.CreateInstance(IChromophoreAbsorber, 3)
@@ -99,31 +99,31 @@ chromophoresFit[0] = ChromophoreAbsorber(ChromophoreType.HbO2, fit.x[0])
 chromophoresFit[1] = ChromophoreAbsorber(ChromophoreType.Hb, fit.x[1])
 chromophoresFit[2] = ChromophoreAbsorber(ChromophoreType.H2O, fit.x[2])
 opsFit = Tissue(chromophoresFit, scatterer, "", n=1.4).GetOpticalProperties(wavelengths)
-fitROfRho= forwardSolverForInversion.ROfRho(opsFit, rho)
+rOfRhoFit= forwardSolverForInversion.ROfRho(opsFit, rho)
 # plot the results using Plotly
 xLabel = "wavelength [nm]"
 yLabel = "R(wavelength)"
 wvs = [w for w in wavelengths]
 # plot measured data
-meas = [m for m in measuredROfRho]
+meas = [m for m in rOfRhoMeasured]
 chart = go.Figure()
 chart.add_trace(go.Scatter(x=wvs, y=meas, mode='markers', name='measured data'))
 # plot initial guess data
-ig = [i for i in initialGuessROfRho]
+ig = [i for i in rOfRhoInitialGuess]
 chart.add_trace(go.Scatter(x=wvs, y=ig, mode='markers', name='initial guess'))
 # plot fit
-conv = [f for f in fitROfRho]
+conv = [f for f in rOfRhoFit]
 chart.add_trace(go.Scatter(x=wvs, y=conv, mode='lines', name='converged'))
 chart.update_layout( title="ROfRho (inverse solution for chromophore concentrations, multiple wavelengths, single rho)", xaxis_title=xLabel, yaxis_title=yLabel)
 chart.show(renderer="browser")
 # output results
 print("Meas =    [%5.3f %5.3f %5.3f]" % (measuredData[0], measuredData[1], measuredData[2]))
 print("IG   =    [%5.3f %5.3f %5.3f] Chi2=%5.3e" % (initialGuess[0], initialGuess[1], initialGuess[2],
-                np.dot(np.subtract(measuredROfRho,initialGuessROfRho),
-                       np.subtract(measuredROfRho,initialGuessROfRho))))
+                np.dot(np.subtract(rOfRhoMeasured,rOfRhoInitialGuess),
+                       np.subtract(rOfRhoMeasured,rOfRhoInitialGuess))))
 print("Conv =    [%5.3f %5.3f %5.3f] Chi2=%5.3e" % (fit.x[0], fit.x[1], fit.x[2],
-                np.dot(np.subtract(measuredROfRho,fitROfRho),
-                       np.subtract(measuredROfRho,fitROfRho))))
+                np.dot(np.subtract(rOfRhoMeasured,rOfRhoFit),
+                       np.subtract(rOfRhoMeasured,rOfRhoFit))))
 print("error =   [%5.3f %5.3f %5.3f]%%" % (
                 100*abs((measuredData[0]-fit.x[0])/measuredData[0]),
                 100*abs((measuredData[1]-fit.x[1])/measuredData[1]),

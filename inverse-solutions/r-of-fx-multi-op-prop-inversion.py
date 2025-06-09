@@ -46,7 +46,7 @@ opsMeasured = Tissue(chromophoresMeasuredData, scattererMeasuredData, "", n=1.4)
 # Create measurements using Nurbs-based white Monte Carlo forward solver
 measurementForwardSolver = NurbsForwardSolver()
 # len(measuredROfFx)=(#fxs)x(#wavelengths) flattened
-measuredROfFx=np.concatenate(
+rOfFxMeasured=np.concatenate(
         [np.array(measurementForwardSolver.ROfFx(opsMeasured, fxs[0]), dtype=float), 
          np.array(measurementForwardSolver.ROfFx(opsMeasured, fxs[1]), dtype=float)])
 # Create a forward solver as a model function for inversion
@@ -92,7 +92,7 @@ chromophoresInitialGuess[1] = ChromophoreAbsorber(ChromophoreType.Hb, initialGue
 scattererInitialGuess = PowerLawScatterer(initialGuess[2], initialGuess[3])
 # Compose tissue for initial guess data to obtain OPs
 opsInitialGuess = Tissue(chromophoresInitialGuess, scattererInitialGuess, "", n=1.4).GetOpticalProperties(wavelengths)
-initialGuessROfFx=np.concatenate(
+rOfFxInitialGuess=np.concatenate(
         [np.array(forwardSolverForInversion.ROfFx(opsInitialGuess, fxs[0]), dtype=float), 
          np.array(forwardSolverForInversion.ROfFx(opsInitialGuess, fxs[1]), dtype=float)])
 # Run the levenberg-marquardt inversion
@@ -101,7 +101,7 @@ fit = least_squares(
    residual,
    initialGuess, 
    ftol=1e-9, xtol=1e-9, max_nfev=10000, # max_nfev needs to be integer
-   args=(wavelengths, fxs, measuredROfFx, forwardSolverForInversion), 
+   args=(wavelengths, fxs, rOfFxMeasured, forwardSolverForInversion), 
    method='lm')
 # Calculate final reflectance from model at fit values
 chromophoresFit = Array.CreateInstance(IChromophoreAbsorber, 2)
@@ -110,25 +110,44 @@ chromophoresFit[1] = ChromophoreAbsorber(ChromophoreType.Hb, fit.x[1])
 scattererFit = PowerLawScatterer(fit.x[2], fit.x[3])
 # Compose tissue for fit data to obtain OPs
 opsFit= Tissue(chromophoresFit, scattererFit, "", n=1.4).GetOpticalProperties(wavelengths)
-fitROfFx=np.concatenate(
+rOfFxFit=np.concatenate(
         [np.array(forwardSolverForInversion.ROfFx(opsFit, fxs[0]), dtype=float), 
          np.array(forwardSolverForInversion.ROfFx(opsFit, fxs[1]), dtype=float)])
-# plot the results using Plotly results flattened so have to unflat
+# plot Reflectance: flattened so have to separate
 chart = go.Figure()
 xLabel = "wavelength [nm]"
 yLabel = "R(wavelength)"
 wvs = [w for w in wavelengths]
 # plot measured data first fx first
-meas= [m for m in measuredROfFx]
+meas= [m for m in rOfFxMeasured]
 midpoint=len(meas) // 2
 chart.add_trace(go.Scatter(x=wvs, y=meas[:midpoint], mode='markers', name='measured data: fx1'))
 chart.add_trace(go.Scatter(x=wvs, y=meas[midpoint:], mode='markers', name='measured data: fx2'))
 # plot initial guess data
-ig = [i for i in initialGuessROfFx]
+ig = [i for i in rOfFxInitialGuess]
 chart.add_trace(go.Scatter(x=wvs, y=ig[:midpoint], mode='markers', name='initial guess: fx1'))
 chart.add_trace(go.Scatter(x=wvs, y=ig[midpoint:], mode='markers', name='initial guess: fx2'))
 # plot fit: need to organize by fx
-conv = [f for f in fitROfFx]
+conv = [f for f in rOfFxFit]
+chart.add_trace(go.Scatter(x=wvs, y=conv[:midpoint], mode='lines', name='converged: fx1'))
+chart.add_trace(go.Scatter(x=wvs, y=conv[midpoint:], mode='lines', name='converged: fx2'))
+chart.update_layout( title="ROfFx (inverse solution for chromophore concentrations, multiple wavelengths, multiple fx)", xaxis_title=xLabel, yaxis_title=yLabel)
+# plot Mus': flattened so have to separate
+chart = go.Figure()
+xLabel = "wavelength [nm]"
+yLabel = "us'(wavelength)"
+wvs = [w for w in wavelengths]
+# plot measured data first fx first
+meas= [m for m in scattererMeasuredData]
+midpoint=len(meas) // 2
+chart.add_trace(go.Scatter(x=wvs, y=meas[:midpoint], mode='markers', name='measured data: fx1'))
+chart.add_trace(go.Scatter(x=wvs, y=meas[midpoint:], mode='markers', name='measured data: fx2'))
+# plot initial guess data
+ig = [i for i in [scattererInitialGuess]]
+chart.add_trace(go.Scatter(x=wvs, y=ig[:midpoint], mode='markers', name='initial guess: fx1'))
+chart.add_trace(go.Scatter(x=wvs, y=ig[midpoint:], mode='markers', name='initial guess: fx2'))
+# plot fit: need to organize by fx
+conv = [f for f in [scattererFit]]
 chart.add_trace(go.Scatter(x=wvs, y=conv[:midpoint], mode='lines', name='converged: fx1'))
 chart.add_trace(go.Scatter(x=wvs, y=conv[midpoint:], mode='lines', name='converged: fx2'))
 chart.update_layout( title="ROfFx (inverse solution for chromophore concentrations, multiple wavelengths, multiple fx)", xaxis_title=xLabel, yaxis_title=yLabel)
