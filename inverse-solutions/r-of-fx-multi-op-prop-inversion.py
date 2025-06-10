@@ -148,13 +148,14 @@ chart2.add_trace(go.Scatter(x=wvs, y=measMusp, mode='markers', name='measured da
 scattererInitialGuessMusp= np.zeros(len(wavelengths),dtype=float)
 for i in range(0, len(wavelengths)):
    scattererInitialGuessMusp[i]=opsInitialGuess[i].Musp
-igMusp = [i for i in [scattererInitialGuessMusp]]
+igMusp = [i for i in scattererInitialGuessMusp]
 chart2.add_trace(go.Scatter(x=wvs, y=igMusp, mode='markers', name='initial guess'))
 # plot fit
 scattererFitMusp= np.zeros(len(wavelengths),dtype=float)
 for i in range(0, len(wavelengths)):
    scattererFitMusp[i]=opsFit[i].Musp
-convMusp = [f for f in [scattererFitMusp]]
+convMusp = [f for f in scattererFitMusp]
+print('convMusp[0]=',convMusp)
 chart2.add_trace(go.Scatter(x=wvs, y=convMusp, mode='lines', name='converged'))
 chart2.update_layout( title="ROfFx (inverse solution for chromophore concentrations, multiple wavelengths, multiple fx)", xaxis_title=xLabel, yaxis_title=yLabel)
 chart2.show(renderer="browser")
