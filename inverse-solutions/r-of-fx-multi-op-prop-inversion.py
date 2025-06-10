@@ -114,53 +114,58 @@ rOfFxFit=np.concatenate(
         [np.array(forwardSolverForInversion.ROfFx(opsFit, fxs[0]), dtype=float), 
          np.array(forwardSolverForInversion.ROfFx(opsFit, fxs[1]), dtype=float)])
 # plot Reflectance: flattened so have to separate
-chart = go.Figure()
+chart1 = go.Figure()
 xLabel = "wavelength [nm]"
 yLabel = "R(wavelength)"
 wvs = [w for w in wavelengths]
 # plot measured data first fx first
-meas= [m for m in rOfFxMeasured]
-midpoint=len(meas) // 2
-chart.add_trace(go.Scatter(x=wvs, y=meas[:midpoint], mode='markers', name='measured data: fx1'))
-chart.add_trace(go.Scatter(x=wvs, y=meas[midpoint:], mode='markers', name='measured data: fx2'))
+measR= [m for m in rOfFxMeasured]
+midpoint=len(measR) // 2
+chart1.add_trace(go.Scatter(x=wvs, y=measR[:midpoint], mode='markers', name='measured data: fx1'))
+chart1.add_trace(go.Scatter(x=wvs, y=measR[midpoint:], mode='markers', name='measured data: fx2'))
 # plot initial guess data
-ig = [i for i in rOfFxInitialGuess]
-chart.add_trace(go.Scatter(x=wvs, y=ig[:midpoint], mode='markers', name='initial guess: fx1'))
-chart.add_trace(go.Scatter(x=wvs, y=ig[midpoint:], mode='markers', name='initial guess: fx2'))
+igR = [i for i in rOfFxInitialGuess]
+chart1.add_trace(go.Scatter(x=wvs, y=igR[:midpoint], mode='markers', name='initial guess: fx1'))
+chart1.add_trace(go.Scatter(x=wvs, y=igR[midpoint:], mode='markers', name='initial guess: fx2'))
 # plot fit: need to organize by fx
-conv = [f for f in rOfFxFit]
-chart.add_trace(go.Scatter(x=wvs, y=conv[:midpoint], mode='lines', name='converged: fx1'))
-chart.add_trace(go.Scatter(x=wvs, y=conv[midpoint:], mode='lines', name='converged: fx2'))
-chart.update_layout( title="ROfFx (inverse solution for chromophore concentrations, multiple wavelengths, multiple fx)", xaxis_title=xLabel, yaxis_title=yLabel)
+convR = [f for f in rOfFxFit]
+chart1.add_trace(go.Scatter(x=wvs, y=convR[:midpoint], mode='lines', name='converged: fx1'))
+chart1.add_trace(go.Scatter(x=wvs, y=convR[midpoint:], mode='lines', name='converged: fx2'))
+chart1.update_layout( title="ROfFx (inverse solution for chromophore concentrations, multiple wavelengths, multiple fx)", xaxis_title=xLabel, yaxis_title=yLabel)
+chart1.show(renderer="browser")
 # plot Mus': flattened so have to separate
-chart = go.Figure()
+chart2 = go.Figure()
 xLabel = "wavelength [nm]"
 yLabel = "us'(wavelength)"
 wvs = [w for w in wavelengths]
-# plot measured data first fx first
-meas= [m for m in scattererMeasuredData]
-midpoint=len(meas) // 2
-chart.add_trace(go.Scatter(x=wvs, y=meas[:midpoint], mode='markers', name='measured data: fx1'))
-chart.add_trace(go.Scatter(x=wvs, y=meas[midpoint:], mode='markers', name='measured data: fx2'))
+# plot measured data 
+scattererMeasuredDataMusp= np.zeros(len(wavelengths),dtype=float)
+for i in range(0, len(wavelengths)):
+   scattererMeasuredDataMusp[i]=opsMeasured[i].Musp
+measMusp = [m for m in scattererMeasuredDataMusp]
+chart2.add_trace(go.Scatter(x=wvs, y=measMusp, mode='markers', name='measured data'))
 # plot initial guess data
-ig = [i for i in [scattererInitialGuess]]
-chart.add_trace(go.Scatter(x=wvs, y=ig[:midpoint], mode='markers', name='initial guess: fx1'))
-chart.add_trace(go.Scatter(x=wvs, y=ig[midpoint:], mode='markers', name='initial guess: fx2'))
-# plot fit: need to organize by fx
-conv = [f for f in [scattererFit]]
-chart.add_trace(go.Scatter(x=wvs, y=conv[:midpoint], mode='lines', name='converged: fx1'))
-chart.add_trace(go.Scatter(x=wvs, y=conv[midpoint:], mode='lines', name='converged: fx2'))
-chart.update_layout( title="ROfFx (inverse solution for chromophore concentrations, multiple wavelengths, multiple fx)", xaxis_title=xLabel, yaxis_title=yLabel)
-
-chart.show(renderer="browser")
+scattererInitialGuessMusp= np.zeros(len(wavelengths),dtype=float)
+for i in range(0, len(wavelengths)):
+   scattererInitialGuessMusp[i]=opsInitialGuess[i].Musp
+igMusp = [i for i in [scattererInitialGuessMusp]]
+chart2.add_trace(go.Scatter(x=wvs, y=igMusp, mode='markers', name='initial guess'))
+# plot fit
+scattererFitMusp= np.zeros(len(wavelengths),dtype=float)
+for i in range(0, len(wavelengths)):
+   scattererFitMusp[i]=opsFit[i].Musp
+convMusp = [f for f in [scattererFitMusp]]
+chart2.add_trace(go.Scatter(x=wvs, y=convMusp, mode='lines', name='converged'))
+chart2.update_layout( title="ROfFx (inverse solution for chromophore concentrations, multiple wavelengths, multiple fx)", xaxis_title=xLabel, yaxis_title=yLabel)
+chart2.show(renderer="browser")
 # output results
 print("Meas =    [%5.3f %5.3f %5.3f %5.3f]" % (
                  measuredData[0], measuredData[1], measuredData[2], measuredData[3]))
 print("IG   =    [%5.3f %5.3f %5.3f %5.3f] Chi2=%5.3e" % (
                  initialGuess[0], initialGuess[1], initialGuess[2], initialGuess[3],
-                 np.dot(measuredROfFx-initialGuessROfFx,measuredROfFx-initialGuessROfFx)))
+                 np.dot(rOfFxMeasured-rOfFxInitialGuess,rOfFxMeasured-rOfFxInitialGuess)))
 print("Conv =    [%5.3f %5.3f %5.3f %5.3f] Chi2=%5.3e" % (fit.x[0], fit.x[1], fit.x[2], fit.x[3],
-                 np.dot(measuredROfFx-fitROfFx,measuredROfFx-fitROfFx)))
+                 np.dot(rOfFxMeasured-rOfFxFit,rOfFxMeasured-rOfFxFit)))
 print("error =   [%3.2f %3.2f %3.2f %3.2f]%%" % (
                  100*abs((measuredData[0]-fit.x[0])/measuredData[0]),
                  100*abs((measuredData[1]-fit.x[1])/measuredData[1]),
