@@ -51,6 +51,7 @@ rOfFxMeasured=np.concatenate(
          np.array(measurementForwardSolver.ROfFx(opsMeasured, fxs[1]), dtype=float)])
 # Create a forward solver as a model function for inversion
 forwardSolverForInversion = PointSourceSDAForwardSolver()
+#forwardSolverForInversion = NurbsForwardSolver() # results improved but inverse crime!
 
 # Declare local forward reflectance function that computes reflectance 
 # from chromophores and scatterer values
@@ -85,7 +86,7 @@ def residual(valuesSought, wavelengths, fxs, measuredROfFx, forwardSolver):
    return difference
 
 # Run the inversion: set up initial guess 
-initialGuess = [18.0, 30.0, 0.8, 1.60]
+initialGuess = [18.0, 30.0, 0.8, 1.6]
 chromophoresInitialGuess = Array.CreateInstance(IChromophoreAbsorber, 2)
 chromophoresInitialGuess[0] = ChromophoreAbsorber(ChromophoreType.HbO2, initialGuess[0])
 chromophoresInitialGuess[1] = ChromophoreAbsorber(ChromophoreType.Hb, initialGuess[1])
