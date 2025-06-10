@@ -1,5 +1,10 @@
 # This is an example of python code using VTS to provide inverse solution
-# for R(rho) to find chromophore concentrations and power law coefficients.
+# for R(rho) to find chromophore concentrations of [Hb HbO2 H2O], with
+# fixed single rho=1mm, 13 wavelengths [400:50:1000]nm and scatterer
+# Power Law coefficients A=1.2, b=1.42.
+# Scaled Monte Carlo with Nurbs forward solver provides the simulated
+# measured data and PointSourceSDA provides the model used during the
+# inversion.
 # The optimization is performed by the Vts library MPFitLevenbergMarquardt
 # method Solve.
 #
