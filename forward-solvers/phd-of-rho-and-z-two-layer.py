@@ -55,21 +55,23 @@ print(zs_delta)
 zs = 0.1 + zs_delta * np.arange(100)
 print(zs)
 
+allRhos = np.concatenate((-rhos[::-1], rhos))
 opRegionsArray = Array[Array[IOpticalPropertyRegion]]([opRegions])
 # predict the tissue's fluence(rho, z) for the given optical properties 
-fluenceOfRhoAndZ = solver.FluenceOfRhoAndZ(opRegionsArray, rhos, zs );
+fluenceOfRhoAndZ = solver.FluenceOfRhoAndZ(opRegionsArray, allRhos, zs );
 #print("*********************************** FLUENCE *****************************************")
 #print(list(fluenceOfRhoAndZ))
 
 #PHD
+print("*********************************** Fluence *****************************************")
+print('len(fluenceOfRhoAndZ)=',len(fluenceOfRhoAndZ))
 sourceDetectorSeparation = 10
 opArray = Array.CreateInstance(OpticalProperties, 2)
 opArray[0] = OpticalProperties(0.1, 1, 0.8, 1.4)
 opArray[1] = OpticalProperties(0.01, 1, 0.8, 1.4)
 
-phdOfRhoAndZ = ComputationFactory.GetPHD(solver, fluenceOfRhoAndZ, sourceDetectorSeparation, opArray, Array[Double](rhos.tolist()), Array[Double](zs.tolist()))
+phdOfRhoAndZ = ComputationFactory.GetPHD(solver, fluenceOfRhoAndZ, sourceDetectorSeparation, opArray, Array[Double](allRhos.tolist()), Array[Double](zs.tolist()))
 
-allRhos = np.concatenate((-rhos[::-1], rhos))
 print("*********************************** RHOS *****************************************")
 print(allRhos.tolist())
 
