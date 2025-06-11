@@ -6,15 +6,12 @@
 # The optimization is performed by a python library scipy.
 #
 # Import the Operating System so we can access the files for the VTS library
-from pythonnet import load
-load('coreclr')
 import clr
 import os
 file = '../libraries/Vts.dll'
 clr.AddReference(os.path.abspath(file))
 import numpy as np
 import plotly.graph_objects as go
-import plotly.express as px
 from Vts import *
 from Vts.Common import *
 from Vts.Extensions import *
@@ -159,7 +156,6 @@ scattererFitMusp= np.zeros(len(wavelengths),dtype=float)
 for i in range(0, len(wavelengths)):
    scattererFitMusp[i]=opsFit[i].Musp
 convMusp = [f for f in scattererFitMusp]
-print('convMusp[0]=',convMusp)
 chart2.add_trace(go.Scatter(x=wvs, y=convMusp, mode='lines', name='converged'))
 chart2.update_layout( title="ROfFx (inverse solution for chromophore concentrations, multiple wavelengths, multiple fx)", xaxis_title=xLabel, yaxis_title=yLabel)
 chart2.show(renderer="browser")

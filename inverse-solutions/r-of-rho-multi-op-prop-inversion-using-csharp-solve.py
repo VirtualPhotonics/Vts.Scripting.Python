@@ -9,15 +9,12 @@
 # method Solve.
 #
 # Import the Operating System so we can access the files for the VTS library
-from pythonnet import load
-load('coreclr')
 import clr
 import os
 file = '../libraries/Vts.dll'
 clr.AddReference(os.path.abspath(file))
 import numpy as np
 import plotly.graph_objects as go
-import plotly.express as px
 from Vts import *
 from Vts.Common import *
 from Vts.Extensions import *
