@@ -32,6 +32,9 @@ from System.Linq import Enumerable
 
 solver = TwoLayerSDAForwardSolver()
 solver.SourceConfiguration = SourceConfiguration.Distributed
+
+distributedSolver = DistributedPointSourceSDAForwardSolver()
+
 topLayerThickness = 5
 opRegions = Array.CreateInstance(IOpticalPropertyRegion, 2)
 opRegions[0] = LayerOpticalPropertyRegion(DoubleRange(0, topLayerThickness, 2), OpticalProperties(0.1, 1, 0.8, 1.4))
@@ -55,29 +58,38 @@ print(zs_delta)
 zs = 0.1 + zs_delta * np.arange(100)
 print(zs)
 
-arrayOP = Array[Array[IOpticalPropertyRegion]]([opRegions])
+opRegionsArray = Array[Array[IOpticalPropertyRegion]]([opRegions])
 # predict the tissue's fluence(rho, z) for the given optical properties 
-fluenceOfRhoAndZ = solver.FluenceOfRhoAndZ(arrayOP, rhos, zs );
-#print("*********************************** FLUENCE *****************************************")
-#print(list(fluenceOfRhoAndZ))
+fluence = solver.FluenceOfRhoAndZ(opRegionsArray, rhos, zs );
+independentAxes = Array.CreateInstance(IndependentVariableAxis, 1)
+independentAxes[0] = IndependentVariableAxis.Z
+independentValues = Array.CreateInstance(Array[Double], 2)
+independentValues[0] = Array[Double](rhos.tolist())
+independentValues[1] = Array[Double](zs.tolist())
+fluenceOfRhoAndZ = ComputationFactory.ComputeFluence(distributedSolver, FluenceSolutionDomainType.FluenceOfRhoAndZ, independentAxes, independentValues, opRegions, Array[Double](rhos.tolist()))
+
+#PHD
+sourceDetectorSeparation = 10
+opArray = Array.CreateInstance(OpticalProperties, 2)
+opArray[0] = OpticalProperties(0.1, 1, 0.8, 1.4)
+opArray[1] = OpticalProperties(0.01, 1, 0.8, 1.4)
+
+phdOfRhoAndZ = ComputationFactory.GetPHD(ForwardSolverType.TwoLayerSDA, fluence, sourceDetectorSeparation, opArray, Array[Double](rhos.tolist()), Array[Double](zs.tolist()))
 
 allRhos = np.concatenate((-rhos[::-1], rhos))
 print("*********************************** RHOS *****************************************")
 print(allRhos.tolist())
 
 # log transform
+log_phd = [Math.Log(f) for f in phdOfRhoAndZ]
 log_fluence = [Math.Log(f) for f in fluenceOfRhoAndZ]
 
 size = len(zs)
 # split into rows
+phdRowsToPlot = np.array([log_phd[i:i+size] for i in range(0, len(log_phd), size)])
 fluenceRowsToPlot = np.array([log_fluence[i:i+size] for i in range(0, len(log_fluence), size)])
-#print("*********************************** FLUENCE ROWS TO PLOT *****************************************")
-#print(fluenceRowsToPlot)
-
 # reverse and concatenate
-allFluenceRowsToPlot = np.concatenate((fluenceRowsToPlot[::-1], fluenceRowsToPlot))
-#print("*********************************** ALL FLUENCE ROWS TO PLOT *****************************************")
-#print(allFluenceRowsToPlot.tolist())
+allFluenceRowsToPlot = np.concatenate((fluenceRowsToPlot[::-1], phdRowsToPlot))
 
 def heatmap(values, x, y, x_label="", y_label="", title=""):
     """Create a heatmap chart."""
@@ -98,5 +110,5 @@ def heatmap(values, x, y, x_label="", y_label="", title=""):
     )
     return fig
 
-fluenceChart = heatmap(allFluenceRowsToPlot.tolist(), allRhos.tolist(), list(zs), "ρ [mm]", "z [mm]", "log(Φ(ρ, z) [mm-2])")
+fluenceChart = heatmap(allFluenceRowsToPlot.tolist(), allRhos.tolist(), list(zs), "ρ [mm]", "z [mm]", "log(phd(ρ, z) [mm-2])")
 fluenceChart.show(renderer="browser")
