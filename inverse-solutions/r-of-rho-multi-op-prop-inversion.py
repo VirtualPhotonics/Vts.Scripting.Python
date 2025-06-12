@@ -9,6 +9,8 @@
 
 #
 # Import the Operating System so we can access the files for the VTS library
+from pythonnet import load
+load('coreclr')
 import clr
 import os
 file = '../libraries/Vts.dll'
@@ -105,7 +107,7 @@ opsFit = Tissue(chromophoresFit, scatterer, "", n=1.4).GetOpticalProperties(wave
 rOfRhoFit= forwardSolverForInversion.ROfRho(opsFit, rho)
 # plot the results using Plotly
 xLabel = "wavelength [nm]"
-yLabel = "R(wavelength)"
+yLabel = "R(wavelength) [mm-2]"
 wvs = [w for w in wavelengths]
 # plot measured data
 meas = [m for m in rOfRhoMeasured]

@@ -9,6 +9,8 @@
 # method Solve.
 #
 # Import the Operating System so we can access the files for the VTS library
+from pythonnet import load
+load('coreclr')
 import clr
 import os
 file = '../libraries/Vts.dll'
