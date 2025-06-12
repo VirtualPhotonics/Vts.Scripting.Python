@@ -103,5 +103,5 @@ def heatmap(values, x, y, x_label="", y_label="", title=""):
     )
     return fig
 
-fluenceChart = heatmap(fluenceRowsToPlot.tolist(), list(rhos), list(zs), "ρ [mm]", "z [mm]", "log(phd(ρ, z) [mm-2])")
+fluenceChart = heatmap(fluenceRowsToPlot.tolist(), allRhos.tolist(), list(zs), "ρ [mm]", "z [mm]", "log(phd(ρ, z) [mm-2])")
 fluenceChart.show(renderer="browser")
