@@ -30,8 +30,7 @@ from System import Array, Double, Object, Func, Math
 clr.AddReference("System.Core")
 from System.Linq import Enumerable
 
-solver = TwoLayerSDAForwardSolver()
-solver.SourceConfiguration = SourceConfiguration.Distributed
+solver = DistributedPointSourceSDAForwardSolver()
 
 topLayerThickness = 5
 opRegions = Array.CreateInstance(IOpticalPropertyRegion, 2)
