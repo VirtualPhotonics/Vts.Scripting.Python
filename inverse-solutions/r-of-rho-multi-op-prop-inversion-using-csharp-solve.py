@@ -104,7 +104,7 @@ chromophoresFit[2] = ChromophoreAbsorber(ChromophoreType.H2O, fit[2])
 opsFit = Tissue(chromophoresFit, scatterer, "", n=1.4).GetOpticalProperties(wavelengths)
 rOfRhoFit= forwardSolverForInversion.ROfRho(opsFit, rho)
 # plot the results using Plotly
-xLabel = "wavelengths [nm]"
+xLabel = "wavelength [nm]"
 yLabel = "R(wavelength) [mm-2]"
 wvs = [w for w in wavelengths]
 # plot measured data
