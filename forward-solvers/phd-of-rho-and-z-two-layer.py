@@ -1,5 +1,5 @@
-# This is an example of python code using VTS to Compute fluence for a two-layer 
-# medium as a function of radial extent and depth at a given set of optical properties 
+# This is an example of python code using VTS to Compute photon hitting density for a two-layer 
+# medium at a given set of optical properties 
 #
 # Import PythonNet
 from pythonnet import load
@@ -59,12 +59,8 @@ allRhos = np.concatenate((-rhos[::-1], rhos))
 opRegionsArray = Array[Array[IOpticalPropertyRegion]]([opRegions])
 # predict the tissue's fluence(rho, z) for the given optical properties 
 fluenceOfRhoAndZ = solver.FluenceOfRhoAndZ(opRegionsArray, allRhos, zs );
-#print("*********************************** FLUENCE *****************************************")
-#print(list(fluenceOfRhoAndZ))
 
 #PHD
-print("*********************************** Fluence *****************************************")
-print('len(fluenceOfRhoAndZ)=',len(fluenceOfRhoAndZ))
 sourceDetectorSeparation = 10
 opArray = Array.CreateInstance(OpticalProperties, 2)
 opArray[0] = OpticalProperties(0.1, 1, 0.8, 1.4)
@@ -72,18 +68,14 @@ opArray[1] = OpticalProperties(0.01, 1, 0.8, 1.4)
 
 phdOfRhoAndZ = ComputationFactory.GetPHD(solver, fluenceOfRhoAndZ, sourceDetectorSeparation, opArray, Array[Double](allRhos.tolist()), Array[Double](zs.tolist()))
 
-print("*********************************** RHOS *****************************************")
-print(allRhos.tolist())
-
 # log transform
 log_fluence = [Math.Log(f) for f in phdOfRhoAndZ]
 
 size = len(zs)
 # split into rows
 fluenceRowsToPlot = np.array([log_fluence[i:i+size] for i in range(0, len(log_fluence), size)])
-#print("*********************************** FLUENCE ROWS TO PLOT *****************************************")
-#print(fluenceRowsToPlot)
 
+# Heatmap function to convert the data into a heat map
 def heatmap(values, x, y, x_label="", y_label="", title=""):
     """Create a heatmap chart."""
     # values should be a 2D array-like (list of lists or 2D numpy array)

@@ -58,12 +58,8 @@ print(zs)
 arrayOP = Array[Array[IOpticalPropertyRegion]]([opRegions])
 # predict the tissue's fluence(rho, z) for the given optical properties 
 fluenceOfRhoAndZ = solver.FluenceOfRhoAndZ(arrayOP, rhos, zs );
-#print("*********************************** FLUENCE *****************************************")
-#print(list(fluenceOfRhoAndZ))
 
 allRhos = np.concatenate((-rhos[::-1], rhos))
-print("*********************************** RHOS *****************************************")
-print(allRhos.tolist())
 
 # log transform
 log_fluence = [Math.Log(f) for f in fluenceOfRhoAndZ]
@@ -71,14 +67,11 @@ log_fluence = [Math.Log(f) for f in fluenceOfRhoAndZ]
 size = len(zs)
 # split into rows
 fluenceRowsToPlot = np.array([log_fluence[i:i+size] for i in range(0, len(log_fluence), size)])
-#print("*********************************** FLUENCE ROWS TO PLOT *****************************************")
-#print(fluenceRowsToPlot)
 
 # reverse and concatenate
 allFluenceRowsToPlot = np.concatenate((fluenceRowsToPlot[::-1], fluenceRowsToPlot))
-#print("*********************************** ALL FLUENCE ROWS TO PLOT *****************************************")
-#print(allFluenceRowsToPlot.tolist())
 
+# Heatmap function to convert the data into a heat map
 def heatmap(values, x, y, x_label="", y_label="", title=""):
     """Create a heatmap chart."""
     # values should be a 2D array-like (list of lists or 2D numpy array)

@@ -1,5 +1,7 @@
-# This is an example of python code using VTS to Compute fluence for a two-layer 
-# medium as a function of radial extent and depth at a given set of optical properties 
+# This is an example of python code using VTS to Compute photon hitting density for a two-layer 
+# medium at a given set of optical properties 
+# This sample uses ComputeFluence in place of calling FluenceOfRhoAndZ on the forward solver object
+# and it uses a distributed point source SDA Forward Solver
 #
 # Import PythonNet
 from pythonnet import load
@@ -56,8 +58,6 @@ zs = 0.1 + zs_delta * np.arange(100)
 print(zs)
 
 allRhos = np.concatenate((-rhos[::-1], rhos))
-print("*********************************** RHOS *****************************************")
-print(allRhos.tolist())
 
 opRegionsArray = Array[Array[IOpticalPropertyRegion]]([opRegions])
 # predict the tissue's fluence(rho, z) for the given optical properties 
@@ -66,6 +66,7 @@ independentAxes[0] = IndependentVariableAxis.Z
 independentValues = Array.CreateInstance(Array[Double], 2)
 independentValues[0] = Array[Double](allRhos.tolist())
 independentValues[1] = Array[Double](zs.tolist())
+# Call the static method ComputeFluence in ComputationFactory to get the fluence data 
 fluenceOfRhoAndZ = ComputationFactory.ComputeFluence(solver, FluenceSolutionDomainType.FluenceOfRhoAndZ, independentAxes, independentValues, opRegions, Array[Double](allRhos.tolist()))
 
 #PHD
@@ -83,6 +84,7 @@ size = len(zs)
 # split into rows
 phdRowsToPlot = np.array([log_phd[i:i+size] for i in range(0, len(log_phd), size)])
 
+# Heatmap function to convert the data into a heat map
 def heatmap(values, x, y, x_label="", y_label="", title=""):
     """Create a heatmap chart."""
     # values should be a 2D array-like (list of lists or 2D numpy array)
