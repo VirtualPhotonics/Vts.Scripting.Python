@@ -1,5 +1,9 @@
 # This is an example of python code using VTS to Compute fluence for a two-layer 
-# medium as a function of radial extent and depth at a given set of optical properties 
+# medium as a function of radial extent and depth at a given set of optical properties.
+# A two-layer SDA forward solver is used to compute the fluence with optical properties
+# defined in opRegions[0] opRegions[1], and top layer thickness defined in topLayerThickness [mm].
+# The fluence as a function of rho and z is determined and when displayed, it is mirrored
+# to show full fluence.
 #
 # Import PythonNet
 from pythonnet import load
@@ -92,4 +96,5 @@ def heatmap(values, x, y, x_label="", y_label="", title=""):
     return fig
 
 fluenceChart = heatmap(allFluenceRowsToPlot.tolist(), allRhos.tolist(), list(zs), "ρ [mm]", "z [mm]", "log(Φ(ρ, z) [mm-2])")
+fluenceChart.add_hline(y=topLayerThickness, line_dash="dash", line_color="white", line_width=2)
 fluenceChart.show(renderer="browser")

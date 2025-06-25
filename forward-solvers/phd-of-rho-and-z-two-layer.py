@@ -1,5 +1,7 @@
 # This is an example of python code using VTS to Compute photon hitting density for a two-layer 
-# medium at a given set of optical properties 
+# medium at a given set of optical properties.  A two-layer SDA forward solver is used to
+# compute the photon hitting density with optical properties defined in opRegions[0] and
+# opRegions[1], and top layer thickness defined in topLayerThickness [mm].
 #
 # Import PythonNet
 from pythonnet import load

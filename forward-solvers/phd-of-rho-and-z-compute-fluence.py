@@ -1,5 +1,5 @@
-# This is an example of python code using VTS to Compute photon hitting density for a two-layer 
-# medium at a given set of optical properties 
+# This is an example of python code using VTS to Compute photon hitting density for homogeneous 
+# medium at a given set of optical properties opRegions[0].
 # This sample uses ComputeFluence in place of calling FluenceOfRhoAndZ on the forward solver object
 # and it uses a distributed point source SDA Forward Solver
 #
@@ -35,9 +35,8 @@ from System.Linq import Enumerable
 solver = DistributedPointSourceSDAForwardSolver()
 
 topLayerThickness = 5
-opRegions = Array.CreateInstance(IOpticalPropertyRegion, 2)
+opRegions = Array.CreateInstance(IOpticalPropertyRegion, 1)
 opRegions[0] = LayerOpticalPropertyRegion(DoubleRange(0, topLayerThickness, 2), OpticalProperties(0.1, 1, 0.8, 1.4))
-opRegions[1] = LayerOpticalPropertyRegion(DoubleRange(topLayerThickness, Double.PositiveInfinity, 2), OpticalProperties(0.01, 1, 0.8, 1.4))
 # Create the DoubleRange instance
 rhos_range = DoubleRange(0.1, 19.9, 100) # range of s-d separations in mm
 
