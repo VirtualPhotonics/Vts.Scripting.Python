@@ -96,4 +96,5 @@ def heatmap(values, x, y, x_label="", y_label="", title=""):
     return fig
 
 fluenceChart = heatmap(fluenceRowsToPlot.tolist(), allRhos.tolist(), list(zs), "ρ [mm]", "z [mm]", "log(phd(ρ, z) [mm-2])")
+fluenceChart.add_hline(y=topLayerThickness, line_dash="dash", line_color="white", line_width=2)
 fluenceChart.show(renderer="browser")
