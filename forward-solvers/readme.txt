@@ -1,1 +1,1 @@
-This folder will contain the Forward Solver demos.
+This folder contains the Forward Solver demos.
