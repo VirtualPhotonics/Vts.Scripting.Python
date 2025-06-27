@@ -9,6 +9,9 @@ load('coreclr')
 import clr
 # Import the Operating System so we can access the files for the VTS library
 import os
+import sys
+module_path = '../modules'
+sys.path.append(module_path)
 file = '../libraries/Vts.dll'
 clr.AddReference(os.path.abspath(file))
 import numpy as np
