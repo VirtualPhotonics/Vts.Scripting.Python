@@ -9,11 +9,13 @@ load('coreclr')
 import clr
 # Import the Operating System so we can access the files for the VTS library
 import os
+import sys
+module_path = '../modules'
+sys.path.append(module_path)
 file = '../libraries/Vts.dll'
 clr.AddReference(os.path.abspath(file))
 import numpy as np
 import plotly.graph_objects as go
-import plotly.express as px
 from Vts import *
 from Vts.Common import *
 from Vts.Extensions import *
@@ -28,9 +30,8 @@ from Vts.MonteCarlo.Detectors import *
 from Vts.MonteCarlo.Factories import *
 from Vts.MonteCarlo.PhotonData import *
 from Vts.MonteCarlo.PostProcessing import *
-from System import Array, Double, Object, Func, Math
-clr.AddReference("System.Core")
-from System.Linq import Enumerable
+from System import Array, Double, Math
+from graph_tools import heatmap
 
 solver = TwoLayerSDAForwardSolver()
 solver.SourceConfiguration = SourceConfiguration.Distributed
@@ -76,26 +77,6 @@ log_fluence = [Math.Log(f) for f in phdOfRhoAndZ]
 size = len(zs)
 # split into rows
 fluenceRowsToPlot = np.array([log_fluence[i:i+size] for i in range(0, len(log_fluence), size)])
-
-# Heatmap function to convert the data into a heat map
-def heatmap(values, x, y, x_label="", y_label="", title=""):
-    """Create a heatmap chart."""
-    # values should be a 2D array-like (list of lists or 2D numpy array)
-    fig = go.Figure(data=go.Heatmap(
-        z=values,
-        x=x,
-        y=y,
-        transpose=True,
-        colorscale='Hot',
-        colorbar=dict(title=title)
-    ))
-    fig.update_layout(
-        title=title,
-        xaxis_title=x_label,
-        yaxis_title=y_label,
-        yaxis_autorange='reversed'
-    )
-    return fig
 
 fluenceChart = heatmap(fluenceRowsToPlot.tolist(), allRhos.tolist(), list(zs), "ρ [mm]", "z [mm]", "log(phd(ρ, z) [mm-2])")
 fluenceChart.add_hline(y=topLayerThickness, line_dash="dash", line_color="white", line_width=2)
