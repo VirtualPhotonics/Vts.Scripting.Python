@@ -1,6 +1,8 @@
-# This is an example of python code using VTS to provide Monte Carlo solutions
-# for R(rho) using Analog and Continuous Absorption Weighting (CAW) random
-# walk processes.
+# Spatially-Resolved Reflectance Predictions for Analog versus CAW Simulations 
+#
+# Goal: This exercise compares error estimates of spatially-resolved 
+# reflectance using Analog versus Continuous Absorption Weighting (CAW) i
+# simulations. 
 #
 # Import the Operating System so we can access the files for the VTS library
 from pythonnet import load
