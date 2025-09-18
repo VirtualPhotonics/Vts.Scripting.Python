@@ -65,6 +65,7 @@ RelativeErrorArray = np.zeros((len(nPhot), (zCount - 1) * (rhoCount-1)))
 
 # plot 4 cases in grid
 fig, axes = plt.subplots(nrows=2,ncols=2)
+fig.suptitle("Fluence vs n")
 xLabel = "ρ [mm]"
 yLabel = "z [mm]"
 title = "log(Φ(ρ,z)) [mm-2]"
@@ -147,12 +148,10 @@ for i in range(0, len(nPhot)):
     cbar = fig.colorbar(im3, cmap=colormap, location='right', shrink=0.6, pad=0.05)
     cbar.set_ticks(cbar_ticks)
 
-plt.savefig('fluence-vs-n.png')
-
 # plot relative error as a function of N, the number of photons simulated
 # plot 4 cases in grid
-plt.clf() # clear fluence figure
 fig, axes = plt.subplots(nrows=2,ncols=2)
+fig.suptitle("Relative error vs n")
 xLabel = "ρ [mm]"
 yLabel = "z [mm]"
 title = "relerror(Φ(ρ,z))"
@@ -199,5 +198,5 @@ for i in range(0, len(nPhot)):
     axes[1,1].text(10, 90, 'N=10000')
     cbar = fig.colorbar(im3, cmap=colormap, location='right', shrink=0.6, pad=0.05)
 
-plt.savefig('relative-error-vs-n.png')
+plt.show()
 
